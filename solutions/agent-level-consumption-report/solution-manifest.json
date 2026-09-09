@@ -1,0 +1,17 @@
+{
+  "solution": {
+    "uniqueName": "AgentLevelConsumptionReport",
+    "friendlyName": "Agent Level Consumption Report",
+    "version": "1.0.0.1",
+    "solutionId": "015187f8-b3ab-f111-aaab-000d3a314f6d",
+    "publisherPrefix": "crc57"
+  },
+  "source": {
+    "environmentName": "Contoso - Dev"
+  },
+  "artifacts": {
+    "managed": "artifacts/AgentLevelConsumptionReport_1.0.0.1_managed.zip",
+    "unmanaged": "artifacts/AgentLevelConsumptionReport_1.0.0.1_unmanaged.zip",
+    "source": "src"
+  }
+}

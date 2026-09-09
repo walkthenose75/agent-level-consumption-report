@@ -1,0 +1,45 @@
+{
+  "$schema": "../../accelerator/schema/solution-plan.schema.json",
+  "name": "agent-level-consumption-report",
+  "description": "Generate and store the Microsoft 365 agent-level entitlement consumption report.",
+  "publisher": {
+    "uniqueName": "AgentLevelConsumptionReportPublisher",
+    "prefix": "contoso"
+  },
+  "solution": {
+    "uniqueName": "AgentLEvelConsumptionReport",
+    "version": "1.0.0.0"
+  },
+  "steps": [
+    {
+      "id": "ideation",
+      "type": "ideation",
+      "description": "Capture the concept and documentation."
+    },
+    {
+      "id": "environment",
+      "type": "environment",
+      "description": "Confirm the target development environment."
+    },
+    {
+      "id": "solution",
+      "type": "publisher-solution",
+      "description": "Create or select the publisher and solution."
+    },
+    {
+      "id": "flows",
+      "type": "flows",
+      "description": "Create the stopped agent-level consumption report flow inside the solution."
+    },
+    {
+      "id": "validate",
+      "type": "validate",
+      "description": "Build and test the complete solution."
+    },
+    {
+      "id": "export",
+      "type": "export",
+      "description": "Export and unpack the solution into source control."
+    }
+  ]
+}

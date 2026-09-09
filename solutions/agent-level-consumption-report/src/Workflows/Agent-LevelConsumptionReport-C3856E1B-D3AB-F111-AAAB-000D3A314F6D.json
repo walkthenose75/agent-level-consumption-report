@@ -1,0 +1,208 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_webcontents": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "crc57_AgentConsumptionPowerPlatformApi"
+        },
+        "api": {
+          "name": "shared_webcontents"
+        }
+      },
+      "shared_onedriveforbusiness": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "crc57_AgentConsumptionOneDrive"
+        },
+        "api": {
+          "name": "shared_onedriveforbusiness"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "368d0d41-1c33-4a25-b3e1-f12f58a11c0f"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_Copilot_Credit_Capacity": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "authentication": {
+              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']",
+              "type": "Raw"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_webcontents",
+              "operationId": "InvokeHttp",
+              "connectionName": "shared_webcontents"
+            },
+            "parameters": {
+              "request/method": "GET",
+              "request/url": "licensing/entitlements/MCSMessages?api-version=2024-10-01"
+            }
+          }
+        },
+        "Condition_Copilot_Credits_Available": {
+          "actions": {
+            "Get_Agent_Level_MCSMessages_Consumption": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "authentication": {
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']",
+                  "type": "Raw"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_webcontents",
+                  "operationId": "InvokeHttp",
+                  "connectionName": "shared_webcontents"
+                },
+                "parameters": {
+                  "request/method": "GET",
+                  "request/url": "@concat('licensing/entitlements/MCSMessages/resources?fromDate=',formatDateTime(addDays(body('Get_Copilot_Credit_Capacity')?['entitlement']?['capacity']?['consumed']?['lastUpdatedOn'],-29),'yyyy-MM-dd'),'&toDate=',formatDateTime(body('Get_Copilot_Credit_Capacity')?['entitlement']?['capacity']?['consumed']?['lastUpdatedOn'],'yyyy-MM-dd'),'&includeFields=users%2Ctags%2CasOfDate&pageSize=5000&api-version=2024-10-01')"
+                }
+              }
+            },
+            "Select_Agent_Consumption_Columns": {
+              "runAfter": {
+                "Get_Agent_Level_MCSMessages_Consumption": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Select",
+              "inputs": {
+                "from": "@coalesce(body('Get_Agent_Level_MCSMessages_Consumption')?['value'],json('[]'))",
+                "select": {
+                  "AgentId": "@item()?['resourceId']",
+                  "AgentName": "@coalesce(item()?['metadata']?['resourceName'],item()?['metadata']?['displayName'])",
+                  "EnvironmentId": "@item()?['environmentId']",
+                  "UsageDate": "@coalesce(item()?['asOfDate'],item()?['lastRefreshedDate'])",
+                  "ConsumedCredits": "@item()?['consumed']",
+                  "NonBillableCredits": "@item()?['metadata']?['nonBillableConsumed']",
+                  "Product": "@item()?['metadata']?['ProductName']",
+                  "Feature": "@item()?['metadata']?['Feature']",
+                  "Channel": "@item()?['metadata']?['Channel']",
+                  "Unit": "@item()?['unit']"
+                }
+              }
+            },
+            "Create_CSV_Agent_Consumption": {
+              "runAfter": {
+                "Select_Agent_Consumption_Columns": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Table",
+              "inputs": {
+                "from": "@body('Select_Agent_Consumption_Columns')",
+                "format": "CSV"
+              }
+            },
+            "Create_file_Agent_Level_Consumption_Report": {
+              "runAfter": {
+                "Create_CSV_Agent_Consumption": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "authentication": {
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']",
+                  "type": "Raw"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedriveforbusiness",
+                  "operationId": "CreateFile",
+                  "connectionName": "shared_onedriveforbusiness"
+                },
+                "parameters": {
+                  "body": "@body('Create_CSV_Agent_Consumption')",
+                  "folderPath": "/",
+                  "name": "@concat('PPAC_Agent_Level_Consumption_Report_',formatDateTime(utcNow(),'yyyyMMdd_HHmmss'),'.csv')"
+                }
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_Copilot_Credit_Capacity": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {
+              "Stop_No_Copilot_Credits_Entitlement": {
+                "runAfter": {},
+                "type": "Terminate",
+                "inputs": {
+                  "runStatus": "Failed",
+                  "runError": {
+                    "code": "NoCopilotCreditsEntitlement",
+                    "message": "The tenant has no active MCSMessages (Copilot Credits) prepaid capacity or pay-as-you-go entitlement. Per-agent consumption data is unavailable until Copilot Credits funding is enabled."
+                  }
+                }
+              }
+            }
+          },
+          "expression": {
+            "or": [
+              {
+                "greater": [
+                  "@coalesce(body('Get_Copilot_Credit_Capacity')?['entitlement']?['capacity']?['entitled']?['value'],0)",
+                  0
+                ]
+              },
+              {
+                "greater": [
+                  "@coalesce(body('Get_Copilot_Credit_Capacity')?['entitlement']?['payGo']?['entitled']?['value'],0)",
+                  0
+                ]
+              },
+              {
+                "greater": [
+                  "@length(coalesce(body('Get_Copilot_Credit_Capacity')?['productCategories'],json('[]')))",
+                  0
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

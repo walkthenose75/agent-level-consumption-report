@@ -1,0 +1,16 @@
+{
+  "EnvironmentVariables": [],
+  "ConnectionReferences": [
+    {
+      "LogicalName": "crc57_AgentConsumptionOneDrive",
+      "ConnectionId": "",
+      "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_onedriveforbusiness"
+    },
+    {
+      "LogicalName": "crc57_AgentConsumptionPowerPlatformApi",
+      "ConnectionId": "",
+      "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_webcontents"
+    }
+  ],
+  "CopilotAgents": []
+}
