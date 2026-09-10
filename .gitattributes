@@ -1,0 +1,25 @@
+# Normalize line endings: store LF in git, check out LF everywhere. This ends
+# the "LF will be replaced by CRLF" warnings on Windows and keeps diffs clean.
+* text=auto eol=lf
+
+# Scripts and configs are always text.
+*.mjs text
+*.js text
+*.ts text
+*.json text
+*.md text
+*.yml text
+*.yaml text
+*.xml text
+*.py text
+
+# Binary assets must never be line-ending-normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.zip binary
+*.pfx binary
+*.cer binary

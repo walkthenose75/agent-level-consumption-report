@@ -1,0 +1,19 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+
+# Local Power Platform authentication state
+.pac/
+.power/
+auth.json
+
+# Local connection bindings; commit only the example template.
+deployment-settings.json
+# End of repository-specific ignores.
+

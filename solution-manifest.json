@@ -4,14 +4,16 @@
     "friendlyName": "Agent Level Consumption Report",
     "version": "1.0.0.1",
     "solutionId": "015187f8-b3ab-f111-aaab-000d3a314f6d",
+    "publisherUniqueName": "Cr8f23e",
     "publisherPrefix": "crc57"
   },
-  "source": {
-    "environmentName": "Contoso - Dev"
-  },
   "artifacts": {
-    "managed": "artifacts/AgentLevelConsumptionReport_1.0.0.1_managed.zip",
     "unmanaged": "artifacts/AgentLevelConsumptionReport_1.0.0.1_unmanaged.zip",
     "source": "src"
+  },
+  "checksums": {
+    "sha256": {
+      "unmanaged": "092304C24392461E885E7CB56EA80E6BC2148759C50B48D0ED9402A182918FE9"
+    }
   }
 }
